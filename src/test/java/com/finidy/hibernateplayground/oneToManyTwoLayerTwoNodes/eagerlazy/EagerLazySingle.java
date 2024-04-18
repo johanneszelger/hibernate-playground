@@ -12,56 +12,47 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.List;
-
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertSelectCount;
 
-
 @SpringBootTest(classes = {FlywayConfiguration.class, DatasourceWrapperConfiguration.class, PackageConfiguration.class})
-public class EagerLazy extends AbstractTest {
+public class EagerLazySingle extends AbstractTest {
     @Autowired
     private ParentRepository parentRepository;
 
     @Test
-    void loadAll() {
+    @Transactional
+    void loadSingle(){
         long start = System.currentTimeMillis();
-        List<Parent> parents = parentRepository.findAll();
+        Parent parent = parentRepository.findById(1L).get();
         System.out.println("Time taken: " + (System.currentTimeMillis() - start) + "ms");
-        assertSelectCount(parents.size() * 2 + 1);
+        assertSelectCount(1);
     }
 
     @Test
     @Transactional
-    void loadAllWithChildren() {
+    void loadSingleWithChildren(){
         long start = System.currentTimeMillis();
-        List<Parent> parents = parentRepository.findAll();
-        for (Parent parent : parents) {
-            parent.getChildrenA().isEmpty();
-            parent.getChildrenB().isEmpty();
-        }
+        Parent parent = parentRepository.findById(1L).get();
+        parent.getChildrenA().isEmpty();
+        parent.getChildrenB().isEmpty();
         System.out.println("Time taken: " + (System.currentTimeMillis() - start) + "ms");
-        assertSelectCount(parents.size() * 2 + 1);
+        assertSelectCount(1);
     }
 
     @Test
     @Transactional
-    void loadAllWithChildrenAndGrandChildren() {
+    void loadSingleWithChildrenAndGrandChildren(){
         long start = System.currentTimeMillis();
-        List<Parent> parents = parentRepository.findAll();
-        for (Parent parent : parents) {
-            for (ChildA childA : parent.getChildrenA()) {
-                childA.getGrandChildrenA().isEmpty();
-                childA.getGrandChildrenB().isEmpty();
-            }
-            for (ChildB childB : parent.getChildrenB()) {
-                childB.getGrandChildrenC().isEmpty();
-                childB.getGrandChildrenD().isEmpty();
-            };
+        Parent parent = parentRepository.findById(1L).get();
+        for (ChildA childA : parent.getChildrenA()) {
+            childA.getGrandChildrenA().isEmpty();
+            childA.getGrandChildrenB().isEmpty();
         }
+        for (ChildB childB : parent.getChildrenB()) {
+            childB.getGrandChildrenC().isEmpty();
+            childB.getGrandChildrenD().isEmpty();
+        };
         System.out.println("Time taken: " + (System.currentTimeMillis() - start) + "ms");
-        assertSelectCount(parents.size() * 2
-                + parents.size() * parents.get(0).getChildrenA().size() * 2
-                + parents.size() * parents.get(0).getChildrenB().size() * 2
-                + 1);
+        assertSelectCount(1 + parent.getChildrenA().size() * 2 + parent.getChildrenB().size() * 2);
     }
 }

@@ -1,12 +1,12 @@
-package com.finidy.hibernateplayground.oneToManyTwoLayerTwoNodes.eager;
+package com.finidy.hibernateplayground.oneToManyTwoLayerTwoNodes.lazy;
 
 import com.finidy.hibernateplayground.AbstractTest;
 import com.finidy.hibernateplayground.DatasourceWrapperConfiguration;
 import com.finidy.hibernateplayground.FlywayConfiguration;
-import com.finidy.hibernateplayground.oneToManyTwoLayerTwoNodes.eager.model.ChildA;
-import com.finidy.hibernateplayground.oneToManyTwoLayerTwoNodes.eager.model.ChildB;
-import com.finidy.hibernateplayground.oneToManyTwoLayerTwoNodes.eager.model.Parent;
-import com.finidy.hibernateplayground.oneToManyTwoLayerTwoNodes.eager.repo.ParentRepository;
+import com.finidy.hibernateplayground.oneToManyTwoLayerTwoNodes.lazy.model.ChildA;
+import com.finidy.hibernateplayground.oneToManyTwoLayerTwoNodes.lazy.model.ChildB;
+import com.finidy.hibernateplayground.oneToManyTwoLayerTwoNodes.lazy.model.Parent;
+import com.finidy.hibernateplayground.oneToManyTwoLayerTwoNodes.lazy.repo.ParentRepository;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,18 +16,18 @@ import java.util.List;
 
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertSelectCount;
 
+
 @SpringBootTest(classes = {FlywayConfiguration.class, DatasourceWrapperConfiguration.class, PackageConfiguration.class})
-public class Eager extends AbstractTest {
+public class LazyAll extends AbstractTest {
     @Autowired
     private ParentRepository parentRepository;
-
 
     @Test
     void loadAll() {
         long start = System.currentTimeMillis();
-        List<Parent> parents = parentRepository.findAll();
+        parentRepository.findAll();
         System.out.println("Time taken: " + (System.currentTimeMillis() - start) + "ms");
-        assertSelectCount(parents.size() * 2 + 1);
+        assertSelectCount(1);
     }
 
     @Test
@@ -59,6 +59,9 @@ public class Eager extends AbstractTest {
             };
         }
         System.out.println("Time taken: " + (System.currentTimeMillis() - start) + "ms");
-        assertSelectCount(parents.size() * 2 + 1);
+        assertSelectCount(parents.size() * 2
+                + parents.size() * parents.get(0).getChildrenA().size() * 2
+                + parents.size() * parents.get(0).getChildrenB().size() * 2
+                + 1);
     }
 }
