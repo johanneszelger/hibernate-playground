@@ -1,6 +1,7 @@
 package com.finidy.hibernateplayground.oneToManyTwoLayerTwoNodes.lazy.repo;
 
 import com.finidy.hibernateplayground.oneToManyTwoLayerTwoNodes.lazy.model.Parent;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -34,4 +35,13 @@ public interface ParentRepository extends JpaRepository<Parent, Long>{
             "join fetch cb.grandChildrenD " +
             "where p.id = ?1")
     Optional<Parent> findByIdWithGrandChildren(long l);
+
+    @EntityGraph(attributePaths = {"childrenA", "childrenB"})
+    @Query("select p from Parent p")
+    List<Parent> findAllWithChildrenEg();
+
+    @EntityGraph(attributePaths = {"childrenA", "childrenB", "childrenA.grandChildrenA", "childrenA.grandChildrenB",
+            "childrenB.grandChildrenC", "childrenB.grandChildrenD"})
+    @Query("select p from Parent p")
+    List<Parent> findAllWithGrandChildrenEg();
 }
