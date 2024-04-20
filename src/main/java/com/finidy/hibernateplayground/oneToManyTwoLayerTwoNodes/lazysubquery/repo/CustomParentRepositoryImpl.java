@@ -1,6 +1,6 @@
-package com.finidy.hibernateplayground.oneToManyTwoLayerTwoNodes.lazy.repo;
+package com.finidy.hibernateplayground.oneToManyTwoLayerTwoNodes.lazysubquery.repo;
 
-import com.finidy.hibernateplayground.oneToManyTwoLayerTwoNodes.lazy.model.*;
+import com.finidy.hibernateplayground.oneToManyTwoLayerTwoNodes.lazysubquery.model.*;
 import jakarta.persistence.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -26,6 +26,7 @@ public class CustomParentRepositoryImpl implements CustomParentRepository {
 
     @Override
     public List<Parent> findAllWithChildren() {
+
         List<Parent> parents = em.createQuery(
                 "select p from Parent p",
                 Parent.class).getResultList();
